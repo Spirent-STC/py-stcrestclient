@@ -8,12 +8,12 @@ except ImportError:
 def main():
     setup(
         name='stcrestclient',
-        version= '1.9.3',
+        version= '1.9.4',
         author='Spirent',
         author_email='support@spirent.com',
-        url='https://github.com/Spirent/py-stcrestclient',
+        url='https://github.com/Spirent-STC/py-stcrestclient',
         description='stcrestclient: Client modules for STC ReST API',
-        long_description = 'See https://github.com/Spirent/py-stcrestclient#python-stc-rest-api-client-stcrestclient',
+        long_description = 'See https://github.com/Spirent-STC/py-stcrestclient#python-stc-rest-api-client-stcrestclient',
         license='http://www.opensource.org/licenses/mit-license.php',
         keywords='Spirent TestCenter API',
         classifiers=['Development Status :: 5 - Production/Stable',
