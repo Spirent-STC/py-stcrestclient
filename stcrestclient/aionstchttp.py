@@ -101,7 +101,7 @@ class AionStcHttp(StcHttp):
         self._auth.login(username, password)
 
         # Discover stcapi proto/host/port from AION inventory
-        proto, host, port = self._auth.get_stcapi_endpoint(node_name=node_name, ui_port=ui_port)
+        proto, host, port, _ = self._auth.get_stcapi_endpoint(node_name=node_name, ui_port=ui_port)
 
         # Initialise StcHttp -- proto/host/port from inventory, token injected into base headers
         super(AionStcHttp, self).__init__(

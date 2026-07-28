@@ -41,7 +41,7 @@ class AionAuth(object):
         auth = AionAuth(aion_url='https://aion.example.com')
         org_id = auth.get_default_org()
         auth.login('user@example.com', 'password', org_id)
-        proto, host, port = auth.get_stcapi_endpoint()
+        proto, host, port, via_managed = auth.get_stcapi_endpoint()
         # use auth.access_token as Bearer token for stcapi calls
         # call auth.refresh() to renew before expiry
 
@@ -171,8 +171,10 @@ class AionAuth(object):
                      stcapi port is used.
 
         Return:
-        Tuple of (proto, host, port) for the stcapi product instance,
-        where proto is 'http' or 'https' as reported by the inventory.
+        Tuple of (proto, host, port, via_managed) for the stcapi product
+        instance, where proto is 'http' or 'https' as reported by the
+        inventory, and via_managed is True when the endpoint routes through
+        the product's managed session layer rather than the raw stcapi port.
 
         """
         if not self._access_token:
@@ -194,6 +196,7 @@ class AionAuth(object):
                 continue
             ui_match = (ui_port is None)
             stcapi_url = None
+            tc_plus_url = None
             for p in inst.get('ports', []):
                 http = p.get('http', {})
                 name = p.get('name', '').lower()
@@ -201,18 +204,23 @@ class AionAuth(object):
                     ui_match = True
                 if name == 'stcapi':
                     stcapi_url = http.get('url', '')
-            if not ui_match or not stcapi_url:
+                if name == 'testcenterplus':
+                    tc_plus_url = http.get('url', '')
+            # TC+ routes /stcapi/sessions through its nginx (testcenterplus port).
+            # Prefer TC+'s URL so session management in TC+ is not bypassed.
+            resolved_url = tc_plus_url or stcapi_url
+            if not ui_match or not resolved_url:
                 continue
-            parsed = urlparse(stcapi_url)
+            parsed = urlparse(resolved_url)
             proto = parsed.scheme
             host = parsed.hostname
             port = parsed.port
             if not proto or not host or not port:
                 raise AionError(
-                    'stcapi port entry has invalid url: %s' % stcapi_url)
+                    'stcapi port entry has invalid url: %s' % resolved_url)
             if self._dbg_print:
                 print('===> stcapi endpoint: %s://%s:%d' % (proto, host, port))
-            return proto, host, port
+            return proto, host, port, (tc_plus_url is not None)
         if node_name is not None and ui_port is not None:
             raise AionError(
                 'no stcapi port entry found for node_name %s, ui_port %d' % (node_name, ui_port))
