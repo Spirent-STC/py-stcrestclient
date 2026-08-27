@@ -42,10 +42,23 @@ All code works with Python2.7 and Python3.x.
    `python`
    ```python
    >>> from stcrestclient import stchttp
-   >>> stc = stchttp.StcHttp('stcserver.somewhere.com', timeout=5)
+   >>> # Choose ONE of the following connection methods:
+   >>> # HTTP (default)
+   >>> stc = stchttp.StcHttp('stcserver.somewhere.com', timeout=10)
+   >>> # OR
+   >>> # HTTPS
+   >>> stc = stchttp.StcHttp('stcserver.somewhere.com', use_https=True, ca_cert="/path/to/server_cert.pem", timeout=10)
+   >>> 
    >>> sid = stc.new_session('JoeUser', 'ExampleTest')
    >>> stc.system_info()
    ```
+   > **Note:**
+   > When using HTTPS, specify `ca_cert` if the TestCenter server uses a custom or self-signed certificate.
+   > For self-signed certificate, use the following command to retrieve and save the certificate 
+   > ```bash
+   > echo | openssl s_client -connect stcserver.somewhere.com:443 2>/dev/null | openssl x509 > server_cert.pem
+   > ```
+
 
 - Install [client adapter](https://github.com/Viavi-TestCenter/py-stcrestclient#automation-client-rest-api-adapter) for Python automation scripts to use ReST API, without any code change:
 
@@ -97,10 +110,18 @@ To use the STC ReST client library, import the `stchttp.py` module, create a new
 
 ```python
 from stcrestclient import stchttp
+
 stc = stchttp.StcHttp('stcserver.somewhere.com')
 
+# If the TestCenter server is configured to use HTTPS, use the following instead:
+# stc = stchttp.StcHttp(
+#     'stcserver.somewhere.com',
+#     use_https=True,
+#     ca_cert='/path/to/server_cert.pem'
+# )
+
 # Set seconds to wait for response.  A zero-value means no timeout.
-stc.set_timeout(5)
+stc.set_timeout(10)
 
 # Create and join new session
 sid = stc.new_session('JoeUser', 'ExampleTest')
